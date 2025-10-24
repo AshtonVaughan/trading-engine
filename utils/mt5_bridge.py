@@ -87,6 +87,148 @@ class MT5Bridge:
             self.connected = False
             logger.info("Disconnected from MT5")
 
+    def get_balance(self) -> float:
+        """Get account balance."""
+        if not self.connected:
+            return 0.0
+        account_info = mt5.account_info()
+        return account_info.balance if account_info else 0.0
+
+    def get_equity(self) -> float:
+        """Get account equity."""
+        if not self.connected:
+            return 0.0
+        account_info = mt5.account_info()
+        return account_info.equity if account_info else 0.0
+
+    def get_current_price(self, symbol: str) -> Optional[float]:
+        """Get current bid price for a symbol."""
+        if not self.connected:
+            return None
+        tick = mt5.symbol_info_tick(symbol)
+        return tick.bid if tick else None
+
+    def get_recent_bars(self, symbol: str, timeframe: str, count: int) -> Optional[pd.DataFrame]:
+        """Get recent OHLCV bars."""
+        if not self.connected:
+            return None
+
+        # Map timeframe
+        tf_map = {
+            'M1': mt5.TIMEFRAME_M1,
+            'M5': mt5.TIMEFRAME_M5,
+            'M15': mt5.TIMEFRAME_M15,
+            'M30': mt5.TIMEFRAME_M30,
+            'H1': mt5.TIMEFRAME_H1,
+            'H4': mt5.TIMEFRAME_H4,
+            'D1': mt5.TIMEFRAME_D1,
+        }
+        tf = tf_map.get(timeframe, mt5.TIMEFRAME_H1)
+
+        # Get rates
+        rates = mt5.copy_rates_from_pos(symbol, tf, 0, count)
+
+        if rates is None or len(rates) == 0:
+            return None
+
+        # Convert to DataFrame
+        df = pd.DataFrame(rates)
+        df['time'] = pd.to_datetime(df['time'], unit='s')
+
+        return df
+
+    def execute_market_order(
+        self,
+        symbol: str,
+        order_type: str,
+        lot_size: float,
+        stop_loss: Optional[float] = None,
+        take_profit: Optional[float] = None,
+        magic: int = 0,
+    ) -> Optional[dict]:
+        """Execute a market order."""
+        if not self.connected:
+            logger.error("Not connected to MT5")
+            return None
+
+        # Get symbol info
+        symbol_info = mt5.symbol_info(symbol)
+        if symbol_info is None:
+            logger.error(f"Symbol {symbol} not found")
+            return None
+
+        # Prepare request
+        request = {
+            "action": mt5.TRADE_ACTION_DEAL,
+            "symbol": symbol,
+            "volume": lot_size,
+            "type": mt5.ORDER_TYPE_BUY if order_type == 'buy' else mt5.ORDER_TYPE_SELL,
+            "price": mt5.symbol_info_tick(symbol).ask if order_type == 'buy' else mt5.symbol_info_tick(symbol).bid,
+            "deviation": 10,
+            "magic": magic,
+            "comment": "TradingEngine RL",
+            "type_time": mt5.ORDER_TIME_GTC,
+            "type_filling": mt5.ORDER_FILLING_IOC,
+        }
+
+        # Add SL/TP if provided
+        if stop_loss:
+            request["sl"] = stop_loss
+        if take_profit:
+            request["tp"] = take_profit
+
+        # Send order
+        result = mt5.order_send(request)
+
+        if result.retcode != mt5.TRADE_RETCODE_DONE:
+            logger.error(f"Order failed: {result.retcode} - {result.comment}")
+            return None
+
+        return {
+            'ticket': result.order,
+            'price': result.price,
+            'volume': result.volume,
+        }
+
+    def close_position(self, position: dict) -> bool:
+        """Close an open position."""
+        if not self.connected:
+            return False
+
+        # Get position info
+        ticket = position['ticket']
+        pos = mt5.positions_get(ticket=ticket)
+
+        if pos is None or len(pos) == 0:
+            logger.error(f"Position {ticket} not found")
+            return False
+
+        pos = pos[0]
+
+        # Prepare close request
+        request = {
+            "action": mt5.TRADE_ACTION_DEAL,
+            "symbol": pos.symbol,
+            "volume": pos.volume,
+            "type": mt5.ORDER_TYPE_SELL if pos.type == mt5.ORDER_TYPE_BUY else mt5.ORDER_TYPE_BUY,
+            "position": ticket,
+            "price": mt5.symbol_info_tick(pos.symbol).bid if pos.type == mt5.ORDER_TYPE_BUY else mt5.symbol_info_tick(pos.symbol).ask,
+            "deviation": 10,
+            "magic": pos.magic,
+            "comment": "Close by TradingEngine",
+            "type_time": mt5.ORDER_TIME_GTC,
+            "type_filling": mt5.ORDER_FILLING_IOC,
+        }
+
+        # Send close order
+        result = mt5.order_send(request)
+
+        if result.retcode != mt5.TRADE_RETCODE_DONE:
+            logger.error(f"Close failed: {result.retcode} - {result.comment}")
+            return False
+
+        return True
+
     def get_historical_data(
         self,
         symbol: str,
