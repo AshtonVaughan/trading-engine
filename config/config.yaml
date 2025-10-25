@@ -6,7 +6,6 @@ trading:
     - "EURUSD"
     - "GBPUSD"
     - "USDJPY"
-    - "USDCHF"
   timeframe: "H1"  # 1-hour bars for medium-term trading (1-4 hour holds)
 
   # Trading sessions (UTC)
