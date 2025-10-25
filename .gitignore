@@ -36,11 +36,9 @@ env/
 # Jupyter Notebook
 .ipynb_checkpoints
 
-# Data files
-data/raw/
+# Data files (allow raw parquet for cloud training, ignore CSVs)
 data/processed/
-*.parquet
-*.csv
+data/collectors/*.csv
 *.h5
 *.hdf5
 

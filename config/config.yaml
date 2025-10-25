@@ -3,10 +3,11 @@
 # Trading Pairs
 trading:
   pairs:
-    - "EURUSD."
-    - "GBPUSD."
-    - "USDJPY."
-  timeframe: "H1"  # 1-hour bars (M1 only has 7 days on Yahoo Finance)
+    - "EURUSD"
+    - "GBPUSD"
+    - "USDJPY"
+    - "USDCHF"
+  timeframe: "M1"  # 1-minute bars for true scalping (100K bars per pair)
 
   # Trading sessions (UTC)
   sessions:
@@ -32,7 +33,7 @@ trading:
 # Data Collection
 data:
   # Historical data for training
-  start_date: "2023-10-27"  # ~730 days (Yahoo Finance limit for hourly data)
+  start_date: "2024-06-24"  # M5 data: 16 months | M1 data: 3 months (July-Oct 2025)
   end_date: "2025-10-24"
 
   # MT5 connection
