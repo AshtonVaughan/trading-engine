@@ -209,27 +209,27 @@ reward:
   # Special
   martingale_enabled: false  # NEVER use martingale
 
-# Risk Management (Conservative - Target <5% Drawdown)
+# Risk Management (EXTREME Conservative - 100x Leverage + <5% Drawdown)
 risk:
-  # Position sizing (VERY conservative)
-  base_lot_per_10k: 0.1  # 0.1 lot per $10K account (1% risk)
-  max_lot_size: 0.5  # Max 0.5 lots total exposure
+  # Position sizing (MICRO sizing for 100x leverage)
+  base_lot_per_10k: 0.01  # 0.01 lot per $10K (0.1% risk per trade)
+  max_lot_size: 0.05  # Max 0.05 lots total (0.5% account exposure)
   min_lot_size: 0.01
 
-  # Portfolio limits (strict)
-  max_concurrent_trades: 2  # Max 2 simultaneous positions
-  max_daily_trades: 20  # Limit overtrading
+  # Portfolio limits (VERY strict for 100x leverage)
+  max_concurrent_trades: 1  # ONLY 1 position at a time with 100x leverage
+  max_daily_trades: 10  # Severely limit overtrading
 
-  # Drawdown limits (STRICT - your <5% target)
-  daily_loss_limit_pct: 2.0  # Stop trading after -2% day
-  max_drawdown_pct: 5.0  # Emergency shutdown at -5% (YOUR TARGET)
+  # Drawdown limits (CRITICAL with 100x leverage)
+  daily_loss_limit_pct: 1.0  # Stop trading after -1% day
+  max_drawdown_pct: 5.0  # Emergency shutdown at -5% (5 pips on 1 lot)
 
-  # Stop loss / Take profit (tight for M1 scalping)
+  # Stop loss / Take profit (CRITICAL with 100x leverage)
   use_dynamic_stops: true
-  atr_multiplier_sl: 1.0  # Stop loss = 1.0x ATR (tighter)
-  atr_multiplier_tp: 2.0  # Take profit = 2x ATR (2:1 RR minimum)
+  atr_multiplier_sl: 0.5  # Stop loss = 0.5x ATR (VERY tight for 100x leverage)
+  atr_multiplier_tp: 1.5  # Take profit = 1.5x ATR (3:1 RR for survival)
   trailing_stop_enabled: true
-  trailing_stop_trigger_pips: 5  # Start trailing after +5 pips (M1 scalping)
+  trailing_stop_trigger_pips: 3  # Start trailing after +3 pips (100x leverage)
 
   # Spread/slippage (conservative)
   max_spread_pips: 1.5  # Don't trade if spread >1.5 pips
