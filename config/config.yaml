@@ -138,7 +138,7 @@ rl:
 # H200 NVL Optimizations
 h200:
   # Parallel environments
-  num_envs: 128  # Massive parallelization (139GB VRAM)
+  num_envs: 16  # Reduced for system limits (was 128)
 
   # Training settings
   use_bfloat16: true  # H200 native precision
