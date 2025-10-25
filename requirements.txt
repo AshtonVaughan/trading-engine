@@ -1,7 +1,5 @@
 # TradingEngine Requirements
-
-# Core dependencies
-python>=3.11
+# Python 3.11+ required (check with: python --version)
 
 # MetaTrader 5
 MetaTrader5>=5.0.45
