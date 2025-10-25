@@ -7,7 +7,7 @@ trading:
     - "GBPUSD"
     - "USDJPY"
     - "USDCHF"
-  timeframe: "M1"  # 1-minute bars for true scalping (100K bars per pair)
+  timeframe: "H1"  # 1-hour bars for medium-term trading (1-4 hour holds)
 
   # Trading sessions (UTC)
   sessions:
@@ -33,7 +33,7 @@ trading:
 # Data Collection
 data:
   # Historical data for training
-  start_date: "2024-06-24"  # M5 data: 16 months | M1 data: 3 months (July-Oct 2025)
+  start_date: "2023-10-27"  # H1 data: ~730 days (2 years of hourly data)
   end_date: "2025-10-24"
 
   # MT5 connection
@@ -189,47 +189,47 @@ training:
   eval_freq: 1_000_000  # Evaluate every 1M steps
   eval_episodes: 100
 
-# Reward Function (Conservative - Target <5% Drawdown)
+# Reward Function (Medium-Term Swing Trading - Target <5% Drawdown)
 reward:
   # Profit maximization (balanced)
-  profit_multiplier: 1.0
+  profit_multiplier: 1.5  # Higher reward for capturing trends
 
-  # Risk penalties (HEAVY - prioritize drawdown control)
-  drawdown_penalty: 5.0  # Heavily penalize any drawdown
-  holding_cost: 0.005  # Small cost to encourage quick scalps
+  # Risk penalties (moderate - allow room for trends to develop)
+  drawdown_penalty: 3.0  # Penalize drawdowns but allow trend following
+  holding_cost: 0.0001  # Very low cost (encourage holding winners)
 
-  # Bonuses (small wins, high frequency)
-  big_win_bonus: 0.5  # Bonus for wins >10 pips (realistic for M1 scalping)
-  big_win_threshold_pips: 10
-  win_streak_bonus: 0.3
+  # Bonuses (medium wins, quality over quantity)
+  big_win_bonus: 1.0  # Bonus for wins >50 pips (H1 swing targets)
+  big_win_threshold_pips: 50
+  win_streak_bonus: 0.5
 
-  # Losses (heavily penalized)
-  loss_multiplier: 3.0  # Heavily penalize losses to encourage risk management
+  # Losses (moderately penalized)
+  loss_multiplier: 2.0  # Penalize losses but allow for stop outs
 
   # Special
   martingale_enabled: false  # NEVER use martingale
 
-# Risk Management (EXTREME Conservative - 100x Leverage + <5% Drawdown)
+# Risk Management (H1 Medium-Term Trading - 100x Leverage + <5% Drawdown)
 risk:
-  # Position sizing (MICRO sizing for 100x leverage)
-  base_lot_per_10k: 0.01  # 0.01 lot per $10K (0.1% risk per trade)
-  max_lot_size: 0.05  # Max 0.05 lots total (0.5% account exposure)
+  # Position sizing (conservative for 100x leverage + H1)
+  base_lot_per_10k: 0.05  # 0.05 lot per $10K (0.5% risk per trade)
+  max_lot_size: 0.2  # Max 0.2 lots total (2% account exposure)
   min_lot_size: 0.01
 
-  # Portfolio limits (VERY strict for 100x leverage)
-  max_concurrent_trades: 1  # ONLY 1 position at a time with 100x leverage
-  max_daily_trades: 10  # Severely limit overtrading
+  # Portfolio limits (allow 2-3 positions on H1)
+  max_concurrent_trades: 2  # Max 2 positions (different pairs/directions)
+  max_daily_trades: 8  # H1 trades less frequently than M1
 
-  # Drawdown limits (CRITICAL with 100x leverage)
-  daily_loss_limit_pct: 1.0  # Stop trading after -1% day
-  max_drawdown_pct: 5.0  # Emergency shutdown at -5% (5 pips on 1 lot)
+  # Drawdown limits (strict but achievable on H1)
+  daily_loss_limit_pct: 2.0  # Stop trading after -2% day
+  max_drawdown_pct: 5.0  # Emergency shutdown at -5%
 
-  # Stop loss / Take profit (CRITICAL with 100x leverage)
+  # Stop loss / Take profit (H1 swing trading settings)
   use_dynamic_stops: true
-  atr_multiplier_sl: 0.5  # Stop loss = 0.5x ATR (VERY tight for 100x leverage)
-  atr_multiplier_tp: 1.5  # Take profit = 1.5x ATR (3:1 RR for survival)
+  atr_multiplier_sl: 1.5  # Stop loss = 1.5x ATR (reasonable for H1)
+  atr_multiplier_tp: 3.0  # Take profit = 3x ATR (2:1 minimum RR)
   trailing_stop_enabled: true
-  trailing_stop_trigger_pips: 3  # Start trailing after +3 pips (100x leverage)
+  trailing_stop_trigger_pips: 30  # Start trailing after +30 pips (H1 trends)
 
   # Spread/slippage (conservative)
   max_spread_pips: 1.5  # Don't trade if spread >1.5 pips
