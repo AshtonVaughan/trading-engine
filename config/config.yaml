@@ -189,50 +189,50 @@ training:
   eval_freq: 1_000_000  # Evaluate every 1M steps
   eval_episodes: 100
 
-# Reward Function (Aggressive)
+# Reward Function (Conservative - Target <5% Drawdown)
 reward:
-  # Profit maximization
-  profit_multiplier: 2.0
+  # Profit maximization (balanced)
+  profit_multiplier: 1.0
 
-  # Risk penalties (light)
-  drawdown_penalty: 0.3
-  holding_cost: 0.01  # Per step (encourage quick scalps)
+  # Risk penalties (HEAVY - prioritize drawdown control)
+  drawdown_penalty: 5.0  # Heavily penalize any drawdown
+  holding_cost: 0.005  # Small cost to encourage quick scalps
 
-  # Bonuses
-  big_win_bonus: 1.5  # Bonus for wins >40 pips
-  big_win_threshold_pips: 40
-  win_streak_bonus: 0.5
+  # Bonuses (small wins, high frequency)
+  big_win_bonus: 0.5  # Bonus for wins >10 pips (realistic for M1 scalping)
+  big_win_threshold_pips: 10
+  win_streak_bonus: 0.3
 
-  # Losses
-  loss_multiplier: 1.0  # Standard loss penalty
+  # Losses (heavily penalized)
+  loss_multiplier: 3.0  # Heavily penalize losses to encourage risk management
 
   # Special
-  martingale_enabled: false  # Set true for 2x size on loss (VERY RISKY)
+  martingale_enabled: false  # NEVER use martingale
 
-# Risk Management (Max Profit Mode)
+# Risk Management (Conservative - Target <5% Drawdown)
 risk:
-  # Position sizing
-  base_lot_per_10k: 1.0  # 1 lot per $10K account
-  max_lot_size: 10.0  # Max 10 lots (10% account)
+  # Position sizing (VERY conservative)
+  base_lot_per_10k: 0.1  # 0.1 lot per $10K account (1% risk)
+  max_lot_size: 0.5  # Max 0.5 lots total exposure
   min_lot_size: 0.01
 
-  # Portfolio limits
-  max_concurrent_trades: 5  # Max 5 simultaneous (50% account)
-  max_daily_trades: 50
+  # Portfolio limits (strict)
+  max_concurrent_trades: 2  # Max 2 simultaneous positions
+  max_daily_trades: 20  # Limit overtrading
 
-  # Drawdown limits
-  daily_loss_limit_pct: 40.0  # Stop trading after -40% day
-  max_drawdown_pct: 60.0  # Emergency shutdown at -60%
+  # Drawdown limits (STRICT - your <5% target)
+  daily_loss_limit_pct: 2.0  # Stop trading after -2% day
+  max_drawdown_pct: 5.0  # Emergency shutdown at -5% (YOUR TARGET)
 
-  # Stop loss / Take profit
+  # Stop loss / Take profit (tight for M1 scalping)
   use_dynamic_stops: true
-  atr_multiplier_sl: 1.5  # Stop loss = 1.5x ATR
-  atr_multiplier_tp: 3.0  # Take profit = 3x ATR
+  atr_multiplier_sl: 1.0  # Stop loss = 1.0x ATR (tighter)
+  atr_multiplier_tp: 2.0  # Take profit = 2x ATR (2:1 RR minimum)
   trailing_stop_enabled: true
-  trailing_stop_trigger_pips: 30  # Start trailing after +30 pips
+  trailing_stop_trigger_pips: 5  # Start trailing after +5 pips (M1 scalping)
 
-  # Spread/slippage
-  max_spread_pips: 2.0  # Don't trade if spread >2 pips
+  # Spread/slippage (conservative)
+  max_spread_pips: 1.5  # Don't trade if spread >1.5 pips
   expected_slippage_pips: 0.5  # Account for slippage in backtests
 
 # Backtesting
