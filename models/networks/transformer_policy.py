@@ -150,13 +150,18 @@ class TransformerActorCriticPolicy(ActorCriticPolicy):
     """
 
     def __init__(self, *args, **kwargs):
-        # Extract custom kwargs
+        # Extract custom kwargs BEFORE calling super().__init__()
         lstm_hidden = kwargs.pop('lstm_hidden', 1024)
         lstm_layers = kwargs.pop('lstm_layers', 8)
         transformer_heads = kwargs.pop('transformer_heads', 12)
         transformer_layers = kwargs.pop('transformer_layers', 12)
         features_dim = kwargs.pop('d_model', 768)
         dropout = kwargs.pop('dropout', 0.1)
+
+        # Extract critic kwargs (not part of ActorCriticPolicy)
+        dual_critics = kwargs.pop('dual_critics', True)
+        critic_hidden_size = kwargs.pop('critic_hidden_size', 1024)
+        critic_num_layers = kwargs.pop('critic_num_layers', 6)
 
         # Set features extractor
         kwargs['features_extractor_class'] = TransformerLSTMExtractor
@@ -172,11 +177,11 @@ class TransformerActorCriticPolicy(ActorCriticPolicy):
         super().__init__(*args, **kwargs)
 
         # Replace value network with dual critic
-        if kwargs.get('dual_critics', True):
+        if dual_critics:
             self.value_net = DualCriticHead(
                 features_dim=self.features_dim,
-                hidden_size=kwargs.get('critic_hidden_size', 1024),
-                num_layers=kwargs.get('critic_num_layers', 6),
+                hidden_size=critic_hidden_size,
+                num_layers=critic_num_layers,
             )
 
 
