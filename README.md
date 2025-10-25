@@ -1,16 +1,25 @@
-# TradingEngine: DRL FOREX Scalping Bot
+# TradingEngine - H1 Swing Trading DRL Bot
 
-**Extreme-profit Deep Reinforcement Learning bot for 1-minute FOREX scalping.**
+**Deep Reinforcement Learning FOREX trading bot optimized for H1 (hourly) swing trading with strict risk management.**
 
-> ⚠️ **HIGH RISK STRATEGY:** This bot is configured for maximum profit with 10%+ risk per trade. Expect 40-60% drawdowns. **ALWAYS test on demo account first!**
+> ⚠️ **MEDIUM RISK STRATEGY:** This bot targets <5% drawdown with 100x leverage through conservative position sizing and H1 swing trading (1-4 hour holds). **ALWAYS test on demo account first!**
+
+## Strategy Overview
+
+- **Timeframe**: H1 (1-hour bars)
+- **Trading Style**: Medium-term swing trading (1-4 hour holds)
+- **Pairs**: EURUSD, GBPUSD, USDJPY
+- **Leverage**: 100x (with conservative position sizing)
+- **Target**: <5% maximum drawdown, 130-200% annual returns
+- **Risk per Trade**: 0.5% (0.05 lot per $10K account)
 
 ## Features
 
-- **Deep Reinforcement Learning:** PPO agent trained on 3+ years of M1 data
+- **Deep Reinforcement Learning:** PPO agent trained on 2 years of H1 data
 - **H200 NVL Optimized:** 128 parallel environments, 50M parameter models
-- **Aggressive Reward:** Profit-maximization with light risk penalties
-- **MT5 Integration:** Real-time data collection and order execution
-- **100+ Features:** Price action, technical indicators, order flow, market microstructure
+- **Conservative Risk Management:** <5% drawdown target with 100x leverage
+- **MT5 Integration:** Real-time data collection and order execution (Windows only)
+- **69 Features:** Price action, technical indicators, volatility measures
 - **Curriculum Learning:** Progressive training from calm → volatile markets
 - **GPU-Accelerated Backtesting:** Vectorized backtesting with realistic spread/slippage
 - **Walk-Forward Validation:** Rolling 6-month train, 1-month test
@@ -65,14 +74,25 @@ TradingEngine/
 
 ## Installation
 
-### 1. Prerequisites
+### Cloud Training (H200 Linux)
+
+```bash
+git clone https://github.com/AshtonVaughan/TradingEngine.git
+cd TradingEngine
+pip install -r requirements-training.txt
+```
+
+**Note:** `requirements-training.txt` excludes Windows-only dependencies (MetaTrader5).
+
+### Local Development (Windows)
+
+#### 1. Prerequisites
 
 - **Python 3.11+**
-- **MetaTrader 5** (installed and configured)
-- **CUDA 12.1+** (for H200 GPU training)
+- **MetaTrader 5** (for data collection and live trading)
 - **MT5 Demo/Live Account** (from any broker)
 
-### 2. Install Dependencies
+#### 2. Install Dependencies
 
 ```bash
 cd TradingEngine
@@ -110,39 +130,54 @@ Expected output:
 
 ## Usage
 
-### Step 1: Collect Historical Data
+### Training on H200 Cloud
 
-Collect 3+ years of 1-minute data from MT5:
+The H1 data is already in the repository. Start training immediately:
 
 ```bash
-python data/collectors/mt5_historical_collector.py
+# Full training with curriculum learning (100M steps)
+python train_ppo.py --config config/config.yaml
+
+# Train on specific symbol
+python train_ppo.py --config config/config.yaml --symbol EURUSD
+
+# Train without curriculum
+python train_ppo.py --config config/config.yaml --no-curriculum
+
+# Resume from checkpoint
+python train_ppo.py --config config/config.yaml --resume checkpoints/ppo_calm_final.zip
 ```
 
-This will download M1 bars for EURUSD, GBPUSD, USDJPY and save to `data/raw/`.
-
-**Expected time:** 10-30 minutes depending on broker speed.
-
-### Step 2: Feature Engineering
-
-**TODO:** Create feature engineering pipeline
+**Monitor training:**
 ```bash
-python data/features/feature_engineering.py
+tensorboard --logdir runs
 ```
 
-### Step 3: Train RL Agent on H200
-
-**TODO:** Create training pipeline
-```bash
-python training/train_rl_h200.py --config config/config.yaml
-```
-
-**Expected training time on H200 NVL:** 48-72 hours for 100M timesteps
+**Expected training time on H200 NVL:** 24-48 hours for 100M timesteps
 
 Training features:
 - 128 parallel environments
 - bfloat16 mixed precision
 - Curriculum learning (calm → normal → volatile → mixed)
 - Checkpoints every 10M steps
+
+### Data Collection (Windows Only - Optional)
+
+If you need to update or collect more H1 data:
+
+```bash
+# 1. Update date range in config/config.yaml
+# 2. Collect data from Yahoo Finance
+python data/collectors/free_data_collector.py
+
+# 3. Generate features
+python data/features/feature_engineer.py
+
+# 4. Commit to git
+git add data/raw/*.parquet
+git commit -m "Update H1 data"
+git push
+```
 
 ### Step 4: Backtesting
 
