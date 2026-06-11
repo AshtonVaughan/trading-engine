@@ -41,7 +41,14 @@ class LiveTrader:
 
         # Connect to MT5
         logger.info("Connecting to MT5...")
-        self.mt5 = MT5Bridge(mt5_config_path)
+        mt5_settings = self.mt5_config['mt5']
+        self.mt5 = MT5Bridge(
+            login=mt5_settings.get('login'),
+            password=mt5_settings.get('password'),
+            server=mt5_settings.get('server'),
+            path=mt5_settings.get('terminal_path', {}).get('windows'),
+            timeout=mt5_settings.get('timeout_ms', 60000),
+        )
         if not self.mt5.connect():
             raise RuntimeError("Failed to connect to MT5")
 

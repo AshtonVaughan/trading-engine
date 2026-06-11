@@ -203,7 +203,7 @@ def main():
     if all_data:
         logger.info("\n✓ Data collection successful!")
         logger.info(f"✓ Collected data for {len(all_data)} symbols")
-        logger.info(f"✓ Next step: python data/features/feature_engineering.py")
+        logger.info(f"✓ Next step: python data/features/feature_engineer.py")
     else:
         logger.error("\n✗ Data collection failed!")
 

@@ -119,7 +119,7 @@ def main():
     print(f"\nRaw data ready in: {raw_dir.absolute()}")
     print("\nNext steps:")
     print("  1. Update config/config.yaml to use M1 timeframe")
-    print("  2. Run feature engineering: python data/features/feature_engineering.py")
+    print("  2. Run feature engineering: python data/features/feature_engineer.py")
     print("  3. Commit to git and push to GitHub for H200 training")
 
 
